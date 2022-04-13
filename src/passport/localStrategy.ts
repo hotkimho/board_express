@@ -11,6 +11,7 @@ export const applyLocalPassport = () => {
       {
         usernameField: 'username',
         passwordField: 'password',
+        session: false,
       },
       async (username, password, done) => {
         try {

@@ -9,11 +9,12 @@ export const applyJwtPassport = () => {
   const options = {
     jwtFromRequest: extractJwt.fromAuthHeaderAsBearerToken(),
     secretOrKey: process.env.jwtSecret,
-    issuer: 'ho',
-    audience: 'ho',
+    issuer: 'test',
+    audience: 'test',
   };
 
   const jwtVerify = async (payload: any, done: any) => {
+    console.log(payload);
     try {
       const exUser = await User.findOne({ where: payload.username });
       if (exUser) {
@@ -25,6 +26,5 @@ export const applyJwtPassport = () => {
       done(error);
     }
   };
-
-  passport.use(new jwtStrategy(options, jwtVerify));
+  passport.use('jwt', new jwtStrategy(options, jwtVerify));
 };
