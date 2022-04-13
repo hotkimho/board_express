@@ -1,17 +1,11 @@
 import express, { NextFunction, Response, Request } from 'express';
 import bcrypt from 'bcrypt';
-import { User } from '../models/user';
+import { User } from '../../models/user';
 import passport from 'passport';
 
 export const router = express.Router();
 
-// router.get('a', (req, res, next) => {
-//   res.send('auth');
-// });
-export const a = async (req: Request, res: Response, next: NextFunction) => {
-  return res.send('hoho');
-};
-router.post('signup', async (req, res, next) => {
+export const signup = async (req: Request, res: Response, next: NextFunction) => {
   const { username, password } = req.body;
   try {
     const exUser = await User.findOne({ where: { username } });
@@ -23,7 +17,7 @@ router.post('signup', async (req, res, next) => {
         .redirect('/');
     }
     const hash = await bcrypt.hash(password, 12);
-    await User.create({
+    await User.save({
       username,
       password: hash,
     });
@@ -38,9 +32,9 @@ router.post('signup', async (req, res, next) => {
     console.error(error);
     return next(error);
   }
-});
+};
 
-router.post('login', (req, res, next) => {
+export const login = (req: Request, res: Response, next: NextFunction) => {
   passport.authenticate('local', (authError, user, info) => {
     if (authError) {
       console.error(authError);
@@ -61,4 +55,4 @@ router.post('login', (req, res, next) => {
       return res.redirect('/');
     });
   })(req, res, next);
-});
+};
