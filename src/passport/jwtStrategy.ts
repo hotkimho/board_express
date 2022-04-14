@@ -2,29 +2,26 @@ import passportJwt from 'passport-jwt';
 import passport from 'passport';
 import { User } from '../models/user';
 
-const jwtStrategy = passportJwt.Strategy;
-const extractJwt = passportJwt.ExtractJwt;
+const JWTStrategy = passportJwt.Strategy;
+const ExtractJwt = passportJwt.ExtractJwt;
 
-export const applyJwtPassport = () => {
-  const options = {
-    jwtFromRequest: extractJwt.fromAuthHeaderAsBearerToken(),
+export const applyJwt = () => {
+  const JWTConfig = {
+    jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
     secretOrKey: process.env.jwtSecret,
-    issuer: 'test',
-    audience: 'test',
   };
-
-  const jwtVerify = async (payload: any, done: any) => {
-    console.log(payload);
+  const JWTVerify = async (payload: any, done: any) => {
     try {
-      const exUser = await User.findOne({ where: payload.username });
+      console.log('Qweqe');
+      const exUser = await User.findOne({ where: { username: payload.username } });
       if (exUser) {
         return done(null, exUser);
       }
-      done(null, false, { message: '잘못된 정보입니다.' });
+      done(null, false, { message: 'Token Error' });
     } catch (error) {
       console.error(error);
       done(error);
     }
   };
-  passport.use('jwt', new jwtStrategy(options, jwtVerify));
+  passport.use('jwt', new JWTStrategy(JWTConfig, JWTVerify));
 };

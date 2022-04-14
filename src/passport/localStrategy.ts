@@ -1,36 +1,27 @@
 import passport from 'passport';
-import passport_local from 'passport-local';
+import { Strategy as LocalStrategy } from 'passport-local';
 import bcrypt from 'bcrypt';
 import { User } from '../models/user';
 
-const LocalStrategy = passport_local.Strategy;
-
-export const applyLocalPassport = () => {
-  passport.use(
-    new LocalStrategy(
-      {
-        usernameField: 'username',
-        passwordField: 'password',
-        session: false,
-      },
-      async (username, password, done) => {
-        try {
-          const exUser = await User.findOne({ where: { username } });
-          if (exUser) {
-            const result = await bcrypt.compare(password, exUser.password);
-            if (result) {
-              done(null, exUser);
-            } else {
-              done(null, false, { message: '비밀번호가 틀립니다(테스트용)' });
-            }
-          } else {
-            done(null, false, { message: '가입되지 않은 회원입니다(테스트용)' });
-          }
-        } catch (error) {
-          console.error(error);
-          done(error);
+export const applyLocal = () => {
+  const localPassportConfig = {
+    usernameField: 'username',
+    passwordField: 'password',
+  };
+  const localPassportVerify = async (username: string, password: string, done: any) => {
+    try {
+      const exUser = await User.findOne({ where: { username } });
+      if (exUser) {
+        const result = await bcrypt.compare(password, exUser.password);
+        if (result) {
+          return done(null, exUser);
         }
-      },
-    ),
-  );
+      }
+      return done(null, false, { message: '아이디 또는 비밀번호가 틀렸습니다' });
+    } catch (error) {
+      console.error(error);
+      done(error);
+    }
+  };
+  passport.use('local', new LocalStrategy(localPassportConfig, localPassportVerify));
 };
