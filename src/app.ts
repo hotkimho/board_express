@@ -1,4 +1,4 @@
-import express, { Express, Request, Response, NextFunction } from 'express';
+import express, { Express, Request, Response, NextFunction, Application } from 'express';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 import passport from 'passport';
@@ -7,7 +7,7 @@ import { passportConfig } from './passport';
 import * as authRouter from './routes/auth';
 
 dotenv.config();
-const app: Express = express();
+const app: Application = express();
 
 app.use(cookieParser());
 app.use(express.json());
@@ -25,6 +25,13 @@ myDataSource
   });
 
 app.use('/auth', authRouter.router);
+
+app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+  console.error(err);
+  res.status(500).json({
+    message: 'error',
+  });
+});
 
 app.listen(process.env.PORT, () => {
   console.log(process.env.PORT, '에서 대기 중');
