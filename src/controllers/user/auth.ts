@@ -23,9 +23,9 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
           },
           process.env.jwtSecret,
         );
-        return res.status(200).json({
+        console.log('토큰 발급 완료');
+        return res.json({
           token,
-          message: 'success',
         });
       });
     })(req, res);
@@ -46,11 +46,9 @@ export const signup = async (req: Request, res: Response, next: NextFunction) =>
   try {
     const exUser = await User.findOne({ where: { username } });
     if (exUser) {
-      return res
-        .json({
-          message: '이미 있는 사용자입니다',
-        })
-        .redirect('/');
+      return res.status(409).json({
+        message: '이미 있는 사용자입니다',
+      });
     }
     const hash = await bcrypt.hash(password, 12);
     await User.save({
@@ -63,7 +61,6 @@ export const signup = async (req: Request, res: Response, next: NextFunction) =>
       password,
       hash,
     });
-    return res.redirect('/');
   } catch (error) {
     console.error(error);
     return next(error);
