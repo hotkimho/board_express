@@ -23,7 +23,9 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
           },
           process.env.jwtSecret,
         );
-        console.log('토큰 발급 완료');
+        res.cookie('accessToken', token, {
+          httpOnly: true,
+        });
         return res.json({
           token,
         });

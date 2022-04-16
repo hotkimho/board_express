@@ -1,24 +1,38 @@
 import { NextFunction, Response, Request } from 'express';
+import { myDataSource } from '../../data-source';
 import { Post } from '../../models/post';
+import { User } from '../../models/user';
+import jwt, { JwtPayload, VerifyErrors } from 'jsonwebtoken';
 
 export const createPost = async (req: Request, res: Response, next: NextFunction) => {
-  const { title, writer, content } = req.body;
+  const { title, content } = req.body;
 
   try {
-    /*
-    입력값 검증 부분
-     */
-    Post.save({
-      title,
-      writer,
-      content,
-    });
-    console.log('게시글이 저장되었습니다');
-    return res.status(200).json({
-      message: '게시글이 저장되었습니다',
-    });
+    jwt.verify(
+      req.cookies.accessToken,
+      process.env.jwtSecret,
+      async (err: VerifyErrors, payload: JwtPayload) => {
+        const username = payload.username;
+        const user = await myDataSource
+          .getRepository(User)
+          .createQueryBuilder('user')
+          .where('user.username = :username', { username })
+          .getOne();
+        Post.save({
+          title,
+          content,
+          writer: user.username,
+          user,
+        });
+        res.status(200).json({
+          message: '성공적으로 글이 작성되었습니다.',
+        });
+      },
+    );
   } catch (error) {
     console.error(error);
-    next(error);
+    const err = new Error();
+    err.message = 'Save post Error';
+    next(err);
   }
 };
