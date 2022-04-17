@@ -1,10 +1,41 @@
-import {NextFunction, Response, Request} from 'express';
-import {myDataSource} from '../../data-source';
-import {Post} from '../../models/post';
-import {User} from '../../models/user';
-import jwt, {JwtPayload, VerifyErrors} from 'jsonwebtoken';
+import { NextFunction, Response, Request } from 'express';
+import { myDataSource } from '../../data-source';
+import { Post } from '../../models/post';
+import { User } from '../../models/user';
+import jwt, { JwtPayload, VerifyErrors } from 'jsonwebtoken';
 
-export const getPosts = async (req: Request, res: Response, next: NextFunction) => {
+// export const patchPost = async (req: Request, res: Response, next: NextFunction) => {
+//   const { title, content } = req.body;
+//   //
+//   // try {
+//   //   jwt.verify(req.cookies.accessToken,
+//   //     process.env.jwtSecret, async (err: VerifyErrors, payload: JwtPayload) => {
+//   //       const username = payload.username;
+//   //
+//   //     });
+//   //   const postRepository = myDataSource.getRepository(Post);
+//
+//   //}
+// };
+
+export const getPost = async (req: Request, res: Response, next: NextFunction) => {
+  const postId = parseInt(req.params.postId as string);
+
+  try {
+    const postRepository = myDataSource.getRepository(Post);
+    const post = await postRepository.findOneBy({ id: postId });
+    return res.status(200).json({
+      title: post.title,
+      writer: post.writer,
+      content: post.content,
+    });
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+};
+
+export const getPostsOfPage = async (req: Request, res: Response, next: NextFunction) => {
   const limit = 10;
   const page = parseInt(req.query.page as string) || 1;
 
@@ -27,7 +58,7 @@ export const getPosts = async (req: Request, res: Response, next: NextFunction) 
   }
 };
 export const createPost = async (req: Request, res: Response, next: NextFunction) => {
-  const {title, content} = req.body;
+  const { title, content } = req.body;
 
   try {
     jwt.verify(
@@ -38,7 +69,7 @@ export const createPost = async (req: Request, res: Response, next: NextFunction
         const user = await myDataSource
           .getRepository(User)
           .createQueryBuilder('user')
-          .where('user.username = :username', {username})
+          .where('user.username = :username', { username })
           .getOne();
         Post.save({
           title,
