@@ -1,20 +1,14 @@
-import { NextFunction, Response, Request } from 'express';
-import { myDataSource } from '../../data-source';
-import { Post } from '../../models/post';
-import { User } from '../../models/user';
-import jwt, { JwtPayload, VerifyErrors } from 'jsonwebtoken';
+import {NextFunction, Response, Request} from 'express';
+import {myDataSource} from '../../data-source';
+import {Post} from '../../models/post';
+import {User} from '../../models/user';
+import jwt, {JwtPayload, VerifyErrors} from 'jsonwebtoken';
 
-export const getIndexPagePosts = async (req: Request, res: Response, next: NextFunction) => {
+export const getPosts = async (req: Request, res: Response, next: NextFunction) => {
   const limit = 10;
-  const page = parseInt(req.query.page as string) | 1;
+  const page = parseInt(req.query.page as string) || 1;
 
   try {
-    const getLastIndex = await myDataSource
-      .getRepository(Post)
-      .createQueryBuilder('post')
-      .select('post.id')
-      .orderBy('post.id', 'DESC')
-      .getOne();
     const offset = (page - 1) * 10;
     const posts = await myDataSource
       .getRepository(Post)
@@ -33,7 +27,7 @@ export const getIndexPagePosts = async (req: Request, res: Response, next: NextF
   }
 };
 export const createPost = async (req: Request, res: Response, next: NextFunction) => {
-  const { title, content } = req.body;
+  const {title, content} = req.body;
 
   try {
     jwt.verify(
@@ -44,7 +38,7 @@ export const createPost = async (req: Request, res: Response, next: NextFunction
         const user = await myDataSource
           .getRepository(User)
           .createQueryBuilder('user')
-          .where('user.username = :username', { username })
+          .where('user.username = :username', {username})
           .getOne();
         Post.save({
           title,
