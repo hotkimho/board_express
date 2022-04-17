@@ -4,4 +4,5 @@ import passport from 'passport';
 
 export const router = express.Router();
 
+router.get('/', passport.authenticate('jwt', { session: false }), boardRouter.getIndexPagePosts);
 router.post('/post', passport.authenticate('jwt', { session: false }), boardRouter.createPost);
