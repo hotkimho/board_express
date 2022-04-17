@@ -18,6 +18,28 @@ import jwt, { JwtPayload, VerifyErrors } from 'jsonwebtoken';
 //   //}
 // };
 
+export const deletePost = async (req: Request, res: Response, next: NextFunction) => {
+  const postId = parseInt(req.query.postId as string);
+
+  try {
+    const postRepository = myDataSource.getRepository(Post);
+    const userRepository = myDataSource.getRepository(User);
+
+    const user = await userRepository.find({
+      relations: ['posts'],
+    });
+    const postToRemove = await postRepository.find({
+      relations: ['user'],
+      where: { user: { id: postId } },
+    });
+    console.log(postToRemove);
+    // await postRepository.remove(postToRemove);
+    res.status(200).json(postToRemove);
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+};
 export const getPost = async (req: Request, res: Response, next: NextFunction) => {
   const postId = parseInt(req.params.postId as string);
 
