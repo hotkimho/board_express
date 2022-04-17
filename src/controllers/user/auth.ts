@@ -23,9 +23,7 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
           },
           process.env.jwtSecret,
         );
-        res.cookie('accessToken', token, {
-          httpOnly: true,
-        });
+        res.cookie('accessToken', token);
         return res.json({
           token,
         });

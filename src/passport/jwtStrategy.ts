@@ -11,8 +11,8 @@ export const applyJwt = () => {
     secretOrKey: process.env.jwtSecret,
   };
   const JWTVerify = async (payload: any, done: any) => {
+    console.log('jwt 전략 실행');
     try {
-      console.log('Qweqe');
       const exUser = await User.findOne({ where: { username: payload.username } });
       if (exUser) {
         return done(null, exUser);
