@@ -4,37 +4,88 @@ import { Post } from '../../models/post';
 import { User } from '../../models/user';
 import jwt, { JwtPayload, VerifyErrors } from 'jsonwebtoken';
 
-// export const patchPost = async (req: Request, res: Response, next: NextFunction) => {
-//   const { title, content } = req.body;
-//   //
-//   // try {
-//   //   jwt.verify(req.cookies.accessToken,
-//   //     process.env.jwtSecret, async (err: VerifyErrors, payload: JwtPayload) => {
-//   //       const username = payload.username;
-//   //
-//   //     });
-//   //   const postRepository = myDataSource.getRepository(Post);
-//
-//   //}
-// };
+export const patchPost = async (req: Request, res: Response, next: NextFunction) => {
+  const { title, content } = req.body;
+  const postId = parseInt(req.query.postId as string);
+
+  const postRepository = myDataSource.getRepository(Post);
+  try {
+    jwt.verify(
+      req.cookies.accessToken,
+      process.env.jwtSecret,
+      async (err: VerifyErrors, payload: JwtPayload) => {
+        if (err) {
+          return res.status(400).json({
+            message: '사용자 인증에 실패했습니다.',
+          });
+        }
+        const postToUpdate = await postRepository
+          .createQueryBuilder('post')
+          .leftJoinAndSelect('post.user', 'user')
+          .where('post.id = :id', { id: postId })
+          .getOne();
+        if (postToUpdate) {
+          if (postToUpdate.user.username === payload.username) {
+            postToUpdate.title = title;
+            postToUpdate.content = content;
+            await postRepository.save(postToUpdate);
+            return res.status(200).json({
+              message: '게시글이 수정되었습니다.',
+            });
+          }
+          return res.status(400).json({
+            message: '잘못된 사용자 입니다..',
+          });
+        } else {
+          return res.status(400).json({
+            message: '잘못된 게시글입니다.',
+          });
+        }
+      },
+    );
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+};
 
 export const deletePost = async (req: Request, res: Response, next: NextFunction) => {
   const postId = parseInt(req.query.postId as string);
 
   try {
     const postRepository = myDataSource.getRepository(Post);
-    const userRepository = myDataSource.getRepository(User);
 
-    const user = await userRepository.find({
-      relations: ['posts'],
-    });
-    const postToRemove = await postRepository.find({
-      relations: ['user'],
-      where: { user: { id: postId } },
-    });
-    console.log(postToRemove);
-    // await postRepository.remove(postToRemove);
-    res.status(200).json(postToRemove);
+    jwt.verify(
+      req.cookies.accessToken,
+      process.env.jwtSecret,
+      async (err: VerifyErrors, payload: JwtPayload) => {
+        if (err) {
+          return res.status(400).json({
+            message: '사용자 인증에 실패했습니다.',
+          });
+        }
+        const postToRemove = await postRepository
+          .createQueryBuilder('post')
+          .leftJoinAndSelect('post.user', 'user')
+          .where('post.id = :id', { id: postId })
+          .getOne();
+        if (postToRemove) {
+          if (postToRemove.user.username === payload.username) {
+            await postRepository.remove(postToRemove);
+            return res.status(200).json({
+              message: '게시글이 삭제되었습니다',
+            });
+          }
+          return res.status(400).json({
+            message: '잘못된 사용자 입니다..',
+          });
+        } else {
+          return res.status(400).json({
+            message: '잘못된 게시글입니다.',
+          });
+        }
+      },
+    );
   } catch (error) {
     console.error(error);
     next(error);
@@ -42,7 +93,7 @@ export const deletePost = async (req: Request, res: Response, next: NextFunction
 };
 export const getPost = async (req: Request, res: Response, next: NextFunction) => {
   const postId = parseInt(req.params.postId as string);
-
+  console.log('123');
   try {
     const postRepository = myDataSource.getRepository(Post);
     const post = await postRepository.findOneBy({ id: postId });
