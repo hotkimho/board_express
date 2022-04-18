@@ -17,7 +17,7 @@
 
 ## Frontend
 Backend를 메인으로 하여 기능을 구현하고 프론트 부분은 필요한 부분만 React를 공부하여 기능 구현
-
+Frontend github 주소 : [Frontend github](https://github.com/hotkimho/board_express_front)
 - 사용자 인증
   - `Redux`, `ContextAPI`를 사용하기 어려워 전역적으로 로그인 여부를 확인하기 힘들기 때문에 `Cookie`에 토큰을 저장하고 읽어와 사용자 인증
 - 게시판
