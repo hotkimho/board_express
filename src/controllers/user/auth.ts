@@ -19,9 +19,11 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
         const token = jwt.sign(
           {
             username: user.username,
-            password: user.password,
           },
           process.env.jwtSecret,
+          {
+            expiresIn: '10m',
+          },
         );
         res.cookie('accessToken', token);
         return res.json({
